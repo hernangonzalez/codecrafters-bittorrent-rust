@@ -1,7 +1,8 @@
 mod args;
-mod decode;
+mod ben;
 use anyhow::Result;
 use args::Command;
+use ben::Ben;
 
 // Usage: your_bittorrent.sh decode "<encoded_value>"
 fn main() -> Result<()> {
@@ -11,24 +12,12 @@ fn main() -> Result<()> {
     };
 
     match cmd {
-        Command::Decode { input } => handle_decode(&input),
+        Command::Decode { input } => handle_decode(input),
     }
 }
 
-fn handle_decode(i: &str) -> Result<()> {
-    let Some(c) = i.chars().next() else {
-        anyhow::bail!("Input is empty");
-    };
-
-    if c == 'i' {
-        let i = decode::integer(i)?;
-        println!("{i}");
-    } else if c.is_ascii_digit() {
-        let s = decode::string(i)?;
-        println!("{s}");
-    } else {
-        anyhow::bail!("Unknown encoded argument: {i}");
-    }
-
+fn handle_decode(i: String) -> Result<()> {
+    let ben: Ben = i.parse()?;
+    println!("{ben}");
     Ok(())
 }
