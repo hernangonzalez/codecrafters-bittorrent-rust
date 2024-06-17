@@ -1,12 +1,14 @@
-use anyhow::{Context, Result};
-use std::{collections::HashMap, fmt::Display, str::FromStr};
+use std::{collections::HashMap, fmt::Display};
+
+pub type List = Vec<Ben>;
+pub type Map = HashMap<String, Ben>;
 
 #[derive(Clone, Debug, PartialEq)]
 pub enum Ben {
     String(String),
     Number(i64),
-    List(Vec<Ben>),
-    Map(HashMap<String, Ben>),
+    List(List),
+    Map(Map),
 }
 
 impl PartialEq<i64> for Ben {
@@ -55,109 +57,37 @@ impl Display for Ben {
     }
 }
 
-impl FromStr for Ben {
-    type Err = anyhow::Error;
-    fn from_str(s: &str) -> Result<Self> {
-        let (r, b) = Self::decode(s)?;
-        anyhow::ensure!(r.is_empty(), "Unexpected remains: {r}");
-        Ok(b)
-    }
-}
-
-impl Ben {
-    fn decode_str(input: &str) -> Result<(&str, &str)> {
-        let (count, input) = input.split_once(':').context("invalid string format")?;
-        let count: usize = count.parse()?;
-        anyhow::ensure!(count <= input.len(), "invalid ben string lenght: {count}");
-        let (input, out) = input.split_at(count);
-        Ok((out, input))
-    }
-
-    fn decode_string(input: &str) -> Result<(&str, Ben)> {
-        Self::decode_str(input).map(|t| (t.0, Ben::String(t.1.to_owned())))
-    }
-
-    fn decode_number(input: &str) -> Result<(&str, Ben)> {
-        let input = input.strip_prefix('i').context("invalid ben integer")?;
-        let (input, out) = input.split_once('e').context("invalid ben integer")?;
-        let ben = input.parse().map(Ben::Number)?;
-        Ok((out, ben))
-    }
-
-    fn decode_list(input: &str) -> Result<(&str, Ben)> {
-        let input = input.strip_prefix('l').context("invalid ben list start")?;
-        let mut input = input;
-        let mut v = vec![];
-        while !input.starts_with('e') && !input.is_empty() {
-            let ben;
-            (input, ben) = Self::decode(input)?;
-            v.push(ben);
-        }
-        let ben = Ben::List(v);
-        anyhow::ensure!(!input.is_empty(), "Invalid end of list");
-        let input = &input[1..];
-        Ok((input, ben))
-    }
-
-    fn decode_dict(input: &str) -> Result<(&str, Ben)> {
-        let mut input = input.strip_prefix('d').context("invalid ben dict start")?;
-        let mut map = HashMap::<String, Ben>::new();
-        while !input.starts_with('e') && !input.is_empty() {
-            let key;
-            let ben;
-            (input, key) = Self::decode_str(input)?;
-            (input, ben) = Self::decode(input)?;
-            map.insert(key.to_owned(), ben);
-        }
-        anyhow::ensure!(!input.is_empty(), "Invalid end of dict");
-        let input = &input[1..];
-        let ben = Self::Map(map);
-        Ok((input, ben))
-    }
-
-    fn decode(input: &str) -> Result<(&str, Ben)> {
-        match input.chars().next().context("Input is empty")? {
-            c if c.is_ascii_digit() => Self::decode_string(input),
-            'i' => Self::decode_number(input),
-            'l' => Self::decode_list(input),
-            'd' => Self::decode_dict(input),
-            _ => anyhow::bail!("Unknown encoding: {input}"),
-        }
-    }
-}
-
 #[cfg(test)]
 mod test {
     use super::*;
 
     #[test]
-    fn test_string() {
-        let b: Ben = "9:hernan.rs".parse().unwrap();
-        assert_eq!(b, "hernan.rs");
+    fn test_display_string() {
+        let b = Ben::String("hernan.rs".into());
         assert_eq!(b.to_string(), r#""hernan.rs""#);
     }
 
     #[test]
-    fn test_integer() {
-        let b: Ben = "i42e".parse().unwrap();
-        assert_eq!(b, 42);
+    fn test_display_integer() {
+        let b = Ben::Number(42);
+        assert_eq!(b.to_string(), "42");
 
-        let b: Ben = "i-42e".parse().unwrap();
-        assert_eq!(b, -42);
+        let b = Ben::Number(-42);
+        assert_eq!(b.to_string(), "-42");
     }
 
     #[test]
-    fn test_list() {
-        let b: Ben = "l5:helloi52ee".parse().unwrap();
-        assert_eq!(b.to_string(), r#"["hello",52]"#);
-
-        let b: Ben = "lli4eei5ee".parse().unwrap();
-        assert_eq!(b.to_string(), "[[4],5]");
+    fn test_display_list() {
+        let b = Ben::List(vec![Ben::String("hello".into()), Ben::Number(82)]);
+        assert_eq!(b.to_string(), r#"["hello",82]"#);
     }
 
     #[test]
-    fn test_dict() {
-        let b: Ben = "d3:foo3:bar5:helloi52ee".parse().unwrap();
-        assert_eq!(b.to_string(), r#"{"foo":"bar","hello":52}"#);
+    fn test_display_dict() {
+        let mut m: Map = Map::new();
+        m.insert("foo".into(), Ben::String("bar".into()));
+        m.insert("hello".into(), Ben::Number(82));
+        let b: Ben = Ben::Map(m);
+        assert_eq!(b.to_string(), r#"{"foo":"bar","hello":82}"#);
     }
 }

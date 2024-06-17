@@ -1,5 +1,6 @@
 mod args;
 mod ben;
+mod decode;
 use anyhow::Result;
 use args::Command;
 use ben::Ben;
