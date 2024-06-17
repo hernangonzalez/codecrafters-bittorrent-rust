@@ -1,8 +1,10 @@
 use clap::{Parser, Subcommand};
+use std::path::PathBuf;
 
 #[derive(Subcommand)]
 pub enum Command {
     Decode { input: String },
+    Info { path: PathBuf },
 }
 
 #[derive(Parser)]

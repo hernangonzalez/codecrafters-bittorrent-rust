@@ -20,8 +20,8 @@
                 }
             },
             "args": [
-                "decode",
-                "l5:helloi52ee"
+                "info",
+                "info sample.torrent"
             ],
             "cwd": "${workspaceFolder}"
         },
