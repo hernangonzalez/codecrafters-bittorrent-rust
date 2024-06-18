@@ -32,5 +32,10 @@ fn handle_info(p: &Path) -> Result<()> {
     println!("Tracker URL: {}", t.announce);
     println!("Length: {}", t.info.length);
     println!("Info Hash: {}", t.info.digest()?);
+    println!("Piece Length: {}", t.info.piece_length);
+    println!("Piece Hashes:");
+    for hash in t.info.piece_digests() {
+        println!("{hash}")
+    }
     Ok(())
 }
