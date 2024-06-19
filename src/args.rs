@@ -5,6 +5,7 @@ use std::path::PathBuf;
 pub enum Command {
     Decode { input: String },
     Info { path: PathBuf },
+    Peers { path: PathBuf },
 }
 
 #[derive(Parser)]

@@ -20,8 +20,8 @@
                 }
             },
             "args": [
-                "info",
-                "info sample.torrent"
+                "peers",
+                "sample.torrent"
             ],
             "cwd": "${workspaceFolder}"
         },

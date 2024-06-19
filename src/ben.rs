@@ -1,3 +1,4 @@
+mod decode;
 use std::{collections::HashMap, fmt::Display};
 
 pub type List = Vec<Ben>;
