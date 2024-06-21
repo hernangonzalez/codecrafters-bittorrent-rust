@@ -14,7 +14,7 @@ pub struct Info {
 
 impl<'info> Info {
     pub fn hash(&self) -> Result<Hash> {
-        Hash::encode(self)
+        Hash::new(self)
     }
 
     pub fn pieces(&'info self) -> impl Iterator<Item = Hash> + 'info {
