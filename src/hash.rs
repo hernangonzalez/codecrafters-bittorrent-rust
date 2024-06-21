@@ -2,11 +2,15 @@ use anyhow::Result;
 use serde::Serialize;
 use sha1::{Digest, Sha1};
 
-#[derive(Clone, Copy, Debug)]
+#[derive(Clone, Copy, Debug, Serialize)]
 pub struct Hash([u8; Self::SIZE]);
 
 impl Hash {
     const SIZE: usize = 20;
+
+    pub fn as_bytes(&self) -> &[u8] {
+        &self.0
+    }
 
     pub fn digest(&self) -> String {
         hex::encode(self.0)
@@ -28,7 +32,11 @@ impl Hash {
 }
 
 impl<'input> Hash {
-    pub fn new<T: Serialize>(t: &T) -> Result<Self> {
+    pub fn new(b: [u8; 20]) -> Self {
+        Self(b)
+    }
+
+    pub fn encode<T: Serialize>(t: &T) -> Result<Self> {
         let chunk = serde_bencode::to_bytes(t)?;
         let mut hasher = Sha1::new();
         hasher.update(chunk);
