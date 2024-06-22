@@ -4,10 +4,26 @@ use std::path::PathBuf;
 
 #[derive(Subcommand)]
 pub enum Command {
-    Decode { input: String },
-    Info { path: PathBuf },
-    Peers { path: PathBuf },
-    Handshake { path: PathBuf, peer: Peer },
+    Decode {
+        input: String,
+    },
+    Info {
+        path: PathBuf,
+    },
+    Peers {
+        path: PathBuf,
+    },
+    Handshake {
+        path: PathBuf,
+        peer: Peer,
+    },
+    #[command(name = "download_piece")]
+    DownloadPiece {
+        #[arg(short, long)]
+        output: PathBuf,
+        torrent: PathBuf,
+        piece: u32,
+    },
 }
 
 #[derive(Parser)]
