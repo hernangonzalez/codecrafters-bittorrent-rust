@@ -24,6 +24,11 @@ pub enum Command {
         torrent: PathBuf,
         piece: u32,
     },
+    Download {
+        #[arg(short, long)]
+        output: PathBuf,
+        torrent: PathBuf,
+    },
 }
 
 #[derive(Parser)]

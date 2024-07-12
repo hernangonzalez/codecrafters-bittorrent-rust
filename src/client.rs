@@ -1,4 +1,4 @@
-mod announce;
+mod connect;
 mod download;
 mod message;
 mod peer;
@@ -20,25 +20,22 @@ enum Compact {
 
 pub struct Client {
     id: Hash,
-    torrrent: Torrent,
+    torrent: Torrent,
+    peers: Vec<Peer>,
 }
 
 impl Client {
-    fn new(torrrent: Torrent) -> Self {
+    fn new(torrent: Torrent) -> Self {
         let id = Hash::new(*CLIENT_ID);
-        Self { id, torrrent }
+        Self {
+            id,
+            torrent,
+            peers: vec![],
+        }
     }
 
     pub fn open(p: &Path) -> Result<Self> {
         let t = Torrent::open(p)?;
         Ok(Self::new(t))
-    }
-
-    pub async fn discover(&self) -> Result<Vec<Peer>> {
-        announce::discover(self.id, &self.torrrent).await
-    }
-
-    pub async fn connect(&self, p: Peer) -> Result<Stream> {
-        Stream::open(self, p).await
     }
 }

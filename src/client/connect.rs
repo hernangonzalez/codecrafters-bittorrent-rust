@@ -1,9 +1,22 @@
-use super::{Compact, Peer};
+use super::{Client, Compact, Peer, Stream};
 use crate::{hash::Hash, torrent::Torrent};
-use anyhow::Result;
+use anyhow::{Ok, Result};
 use serde::{Deserialize, Serialize};
 
-pub async fn discover(id: Hash, t: &Torrent) -> Result<Vec<Peer>> {
+impl Client {
+    pub async fn discover_peers(&mut self) -> Result<&Vec<Peer>> {
+        if self.peers.is_empty() {
+            self.peers = discover(self.id, &self.torrent).await?;
+        }
+        Ok(&self.peers)
+    }
+
+    pub async fn connect(&self, p: Peer) -> Result<Stream> {
+        Stream::open(self, p).await
+    }
+}
+
+async fn discover(id: Hash, t: &Torrent) -> Result<Vec<Peer>> {
     let mut url = t.announce.clone();
     let req = Request::new(id, t)?;
     let q = req.url_encoded()?;

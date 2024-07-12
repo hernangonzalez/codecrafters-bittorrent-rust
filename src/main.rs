@@ -3,13 +3,11 @@ mod ben;
 mod client;
 mod hash;
 mod torrent;
-use anyhow::Context;
 use anyhow::Result;
 use args::Command;
 use ben::Ben;
 use client::Client;
 use client::Peer;
-use std::io::Write;
 use std::path::Path;
 use torrent::Torrent;
 
@@ -30,12 +28,13 @@ async fn main() -> Result<()> {
             torrent,
             piece,
         } => download_piece(&output, &torrent, piece).await,
+        Command::Download { output, torrent } => download(&output, &torrent).await,
     }
 }
 
 async fn handle_peers(p: &Path) -> Result<()> {
-    let client = Client::open(p)?;
-    for peer in client.discover().await? {
+    let mut client = Client::open(p)?;
+    for peer in client.discover_peers().await? {
         println!("{peer}")
     }
     Ok(())
@@ -68,13 +67,15 @@ async fn handle_handshake(path: &Path, peer: Peer) -> Result<()> {
 }
 
 async fn download_piece(out: &Path, t: &Path, index: u32) -> Result<()> {
-    let client = Client::open(t)?;
-    let peers = client.discover().await?;
-    let peer = peers.first().context("No peer found")?;
-    let mut conn = client.connect(*peer).await?;
-    let chunk = client.download_piece(&mut conn, index).await?;
-    let mut file = std::fs::File::create(out)?;
-    file.write_all(&chunk)?;
+    let mut client = Client::open(t)?;
+    client.download_piece(index, out).await?;
     println!("Piece {index} downloaded to {}.", out.display());
+    Ok(())
+}
+
+async fn download(out: &Path, t: &Path) -> Result<()> {
+    let mut client = Client::open(t)?;
+    client.download(out).await?;
+    println!("Downloaded {} to {}.", t.display(), out.display());
     Ok(())
 }

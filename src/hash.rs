@@ -1,11 +1,13 @@
+use std::fmt::Display;
+
 use anyhow::Result;
 use sha1::{Digest, Sha1};
 
-#[derive(Clone, Copy, Debug)]
+#[derive(Clone, Copy, Debug, PartialEq)]
 pub struct Hash([u8; Self::SIZE]);
 
 impl Hash {
-    const SIZE: usize = 20;
+    pub const SIZE: usize = 20;
 
     pub fn as_bytes(&self) -> &[u8] {
         &self.0
@@ -27,6 +29,12 @@ impl Hash {
                 acc
             },
         ))
+    }
+}
+
+impl Display for Hash {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        self.digest().fmt(f)
     }
 }
 

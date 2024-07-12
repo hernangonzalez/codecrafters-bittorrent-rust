@@ -58,7 +58,7 @@ impl Handshake {
 
 impl Stream {
     pub async fn open(c: &Client, p: Peer) -> Result<Self> {
-        let info = c.torrrent.info.hash()?;
+        let info = c.torrent.info.hash()?;
         let hs = Handshake::new(c.id, info);
         let chunk = hs.to_bytes();
         let addr: SocketAddrV4 = p.into();

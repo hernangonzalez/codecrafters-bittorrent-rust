@@ -1,5 +1,5 @@
 use crate::hash::Hash;
-use anyhow::Result;
+use anyhow::{Context, Result};
 use serde::{Deserialize, Serialize};
 
 #[derive(Serialize, Deserialize, PartialEq, Eq, Debug)]
@@ -18,7 +18,19 @@ impl<'info> Info {
         Hash::encode(chunk)
     }
 
+    pub fn piece_at(&self, index: usize) -> Result<Hash> {
+        self.pieces()
+            .enumerate()
+            .find(|(i, _)| *i == index)
+            .map(|e| e.1)
+            .context("Piece not found at index: {index}")
+    }
+
     pub fn pieces(&'info self) -> impl Iterator<Item = Hash> + 'info {
         Hash::build(&self.pieces)
+    }
+
+    pub fn piece_count(&self) -> usize {
+        self.pieces.len() / Hash::SIZE
     }
 }

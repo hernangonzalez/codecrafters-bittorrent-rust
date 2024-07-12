@@ -20,11 +20,10 @@
                 }
             },
             "args": [
-                "download_piece",
+                "download",
                 "-o",
-                "/tmp/test-piece-0",
+                "/tmp/test.txt",
                 "sample.torrent",
-                "2"
             ],
             "cwd": "${workspaceFolder}"
         },
